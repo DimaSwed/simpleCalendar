@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ru">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Dosis&family=Lato:wght@400;700&family=Roboto:wght@100;300;400;500;700;900&display=swap" rel="stylesheet" />
+		<title>Календарь 2023 года</title>
+		<style>
+			html {
+				box-sizing: border-box;
+				scroll-behavior: smooth;
+			}
+
+			body {
+				margin: 0;
+				background-color: #faf8bc;
+				font-style: normal;
+				line-height: normal;
+				font-family: 'Dosis', sans-serif;
+				font-weight: 400;
+				font-size: 14px;
+			}
+
+			.container {
+				width: 350px;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				margin: 5em auto;
+				padding: 3em;
+				border: 1px solid #29323f;
+				border-radius: 5px;
+				background-color: #29323f;
+				box-shadow: rgba(0, 0, 0, 0.56) 0px 22px 70px 4px;
+				color: #fff;
+			}
+
+			#btnPrev:before {
+				content: '-';
+				padding-right: 5px;
+			}
+			#btnNext:after {
+				content: '+';
+				padding-left: 5px;
+			}
+			#btnPrev,
+			#btnNext {
+				font-family: 'Dosis', sans-serif;
+				background: transparent;
+				border: none;
+				outline: none;
+				cursor: pointer;
+				text-transform: uppercase;
+				transition: all 0.2s ease;
+				margin-top: 20px;
+				margin-bottom: 20px;
+				font-size: 1.25em;
+				color: #fff;
+			}
+			#btnPrev:hover,
+			#btnNext:hover {
+				color: #faf8bc;
+			}
+
+			table {
+				width: 300px;
+				display: table;
+				border-collapse: separate;
+				box-sizing: border-box;
+				text-indent: initial;
+				border-spacing: 2px;
+				margin-bottom: 10px;
+				margin-right: 10px;
+			}
+
+			caption {
+				color: #faf8bc;
+				text-align: center;
+				margin: 0 0 10px 0;
+				padding: 10px 0;
+				font-size: 2em;
+				font-weight: 600;
+			}
+
+			tr {
+				display: table-row;
+				vertical-align: initial;
+			}
+
+			td,
+			th {
+				padding: 8px;
+				text-align: center;
+				font-size: 1.25em;
+			}
+
+			td.toDay {
+				color: #faf8bc;
+				font-size: 1.5em;
+				font-weight: bolder;
+				border: 1px solid #faf8bc;
+				border-radius: 50%;
+				transition: all 0.2s ease;
+			}
+
+			td.toDay:hover {
+				background-color: #faf8bc;
+				color: #29323f;
+				border: 1px solid #29323f;
+				border-radius: 50%;
+			}
+
+			th {
+				width: 25px;
+				margin: 8px;
+				text-align: center;
+				color: #999;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="calendarContainer" class="container"></div>
+
+		<script>
+			let currentYear = 2023
+			let currentMonth = 12
+			// Функция createCalendar принимает три аргумента: elem (селектор элемента), year (год) и month (месяц).
+			function createCalendar(elem, year, month) {
+				// Сначала переменной elem присваивается элемент, выбранный с помощью метода querySelector.
+				elem = document.querySelector(elem)
+				// Очищаем содержимое элемента перед созданием нового календаря
+				elem.innerHTML = ''
+				// Затем переменным mon и d присваиваются значения month - 1 и новый объект Date со значением year и mon.
+				let mon = month - 1
+				let d = new Date(year, mon)
+				let monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
+
+				// Далее создается переменная table, в которую записывается строка с HTML кодом таблицы календаря. В заголовке таблицы указывается текущий месяц и год.
+				let table = `
+        <div>
+				    <button id="btnPrev" type="button" onclick="prevMonth()">Предыдущий</button>
+				    <button id="btnNext" type="button" onclick="nextMonth()">Следующий</button>
+			  </div>
+        <table>
+				    <caption>${monthNames[month - 1]} / ${year} г.</caption>
+						<tr>
+								<th>Пн</th>
+								<th>Вт</th>
+								<th>Ср</th>
+								<th>Чт</th>
+								<th>Пт</th>
+								<th>Сб</th>
+								<th>Вс</th>
+						</tr>
+						<tr>
+									 `
+
+				//  Затем выполняется цикл, который добавляет пустые ячейки в начале таблицы до первого дня указанного месяца.
+				for (let i = 0; i < getDay(d); i++) {
+					table += '<td></td>'
+				}
+
+				// Затем выполняется вложенный цикл, который добавляет дни месяца в таблицу. После добавления каждого дня, проверяется, является ли день последним днем недели. Если да, то добавляется новая строка для следующей недели. Так же проверяется, является ли текущий день равным дню в таблице. Если это так, то добавляется атрибут "style" с заданным стилем.
+				while (d.getMonth() == mon) {
+					if (d.getFullYear() === new Date().getFullYear() && d.getMonth() === new Date().getMonth() && d.getDate() === new Date().getDate()) table += '<td class="toDay">' + d.getDate() + '</td>'
+					else table += '<td>' + d.getDate() + '</td>'
+					if (getDay(d) % 7 == 6) {
+						table += '<tr></tr>'
+					}
+					d.setDate(d.getDate() + 1)
+				}
+
+				// После окончания цикла, проверяется последний день месяца и добавляются пустые ячейки, если неделя не закончилась.
+				if (getDay(d) != 0) {
+					for (let i = getDay(d); i < 7; i++) {
+						table += '<td></td>'
+					}
+				}
+
+				// Затем к переменной table добавляется закрывающий тег таблицы и результат записывается в HTML элемент, выбранный с помощью селектора elem.
+				table += '</tr></table>'
+				elem.innerHTML += table
+			}
+
+			// Функция getDay принимает дату и возвращает день недели в виде числа (0-6), где 0 - понедельник, 1 - вторник и т.д. Если результат равен 0, то возвращает 6. Это нужно для правильного отображения дней недели в таблице календаря.
+			function getDay(date) {
+				let day = date.getDay()
+				if (day == 0) day = 7
+				return day - 1
+			}
+
+			// NEW
+			// Функции prevMonth и nextMonth, которые обновляют значения месяца и года и вызывают createCalendar с новыми значениями.
+			function prevMonth() {
+				currentMonth--
+				if (currentMonth < 1) {
+					currentMonth = 12
+					currentYear--
+				}
+				createCalendar('.container', currentYear, currentMonth)
+			}
+
+			function nextMonth() {
+				currentMonth++
+				if (currentMonth > 12) {
+					currentMonth = 1
+					currentYear++
+				}
+				createCalendar('.container', currentYear, currentMonth)
+			}
+
+			// Инициализация календаря при загрузке страницы
+			createCalendar('.container', currentYear, currentMonth)
+		</script>
+	</body>
+</html>
